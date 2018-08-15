@@ -1,7 +1,9 @@
 # load packages
 import pandas as pd
 import requests
+import re
 from bs4 import BeautifulSoup
+
 
 # set basic variables
 max_pages = 42            # number of pages
@@ -20,7 +22,9 @@ for i in range(max_pages): #R from 1, Python from 0 = i+1
     
     tmp_filmnames = pd.Series(page_html.select(".rec-box")) \
     .apply(lambda f: f.getText().strip()) \
-    .apply(lambda f: f.split("%",1)[1].strip())
+    .apply(lambda f: re.sub("\d{1,3}\s%\s","",f))
+    # another option without regexp
+    #.apply(lambda f: f.split("%",1)[1].strip())
     
     #another option with common python list   
     #tmp_filmnames = page_html.select(".rec-box")
@@ -34,7 +38,9 @@ for i in range(max_pages): #R from 1, Python from 0 = i+1
     .apply(lambda f: f.getText().strip())
     
     # ......... and make them numeric
-    tmp_filmratings = tmp_filmratings.apply(lambda f: int(f.strip("%")))
+    tmp_filmratings = tmp_filmratings.apply(lambda f: int(re.sub("\s%","",f)))
+    # another option without regexp
+    #tmp_filmratings = tmp_filmratings.apply(lambda f: int(f.strip("%")))
     
     # film reviews url
     tmp_filmurl = pd.Series(page_html.select(".art > a")) \
@@ -61,6 +67,6 @@ reviews.plot.hist()
 #write CSV
 reviews.to_csv("reviews.csv", index=False, encoding="utf-8")
 
-## reviews.rating.value_counts()
+## reviews.rating.value_counts(sort=False)
 
 ## reviews.describe()
